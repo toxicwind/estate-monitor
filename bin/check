@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# estate-monitor — self-test gate (PASS/FAIL).
+# Primary ops are the watcher modules (process watchdog, repo-radar,
+# recursive-fallback). No standalone daemon/port. Gate = the bun test suite.
+# Additive only — owners the moon.yml WIP untouched.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+echo "== estate-monitor check: start =="
+BUN="${BUN:-/home/toxic/.bun/bin/bun}"
+[ -x "$BUN" ] || { echo "FAIL: bun not found at $BUN"; exit 1; }
+
+set +e
+out="$("$BUN" test 2>&1)"
+rc=$?
+set -e
+echo "$out"
+
+[ "$rc" -eq 0 ] || { echo "FAIL: bun test rc=$rc"; exit 1; }
+echo "$out" | grep -qiE '[0-9]+ pass' || { echo "FAIL: no pass marker"; exit 1; }
+
+echo "== estate-monitor check: PASS =="
+exit 0
